@@ -1,0 +1,13 @@
+[
+  {
+    "directory": "/home/liam/delaunay_triangulation",
+    "file": "main.cpp",    
+    "arguments": [
+      "g++",
+      "-std=c++20",
+      "-Iinclude",
+      "-lraylib",
+      "main.cpp"
+    ]
+  }
+]

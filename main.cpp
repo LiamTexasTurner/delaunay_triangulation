@@ -14,6 +14,7 @@
 #include <iomanip>
 #include "common.h"
 #include "mat.h"
+#include "triangulate.h"
 
 struct GuiBox
 {
@@ -45,6 +46,44 @@ void uv_to_screen(const Vector2 p00,
       outP.y = world[1];
 }
 
+void fit_triangulation(std::vector<delauney_tri>& parameter_tris,
+                       std::span<node> animation_parameters)
+{
+  
+      // Allocate triangles array
+      parameter_tris.resize(animation_parameters.size() * 3);
+      //zero
+    
+      // Allocate space for points which includes index
+      // so we do not lose ordering after sorting
+      std::vector<delauney_point> delauney_points(animation_parameters.size() + 3);
+    
+      for (int i = 0; i < animation_parameters.size(); i++)
+      {
+            delauney_points[i].index = i;
+            delauney_points[i].x = animation_parameters[i].x;
+            delauney_points[i].y = animation_parameters[i].y;
+      }
+    
+      // Fit triangulation
+      int tri_num = 0;
+      int status = delauney_triangulate(&tri_num, 
+                                        parameter_tris, 
+                                        animation_parameters.size(), 
+                                        delauney_points);
+    
+      assert(status == 0);
+    
+      // Copy found points into triangles array
+      parameter_tris.resize(tri_num);
+      for (int i = 0; i < parameter_tris.size(); i++)
+      {
+            parameter_tris[i].p1 = delauney_points[parameter_tris[i].p1].index;
+            parameter_tris[i].p2 = delauney_points[parameter_tris[i].p2].index;
+            parameter_tris[i].p3 = delauney_points[parameter_tris[i].p3].index;
+      }
+}
+
 int main()
 {
       int screen_width = 1920;
@@ -72,6 +111,7 @@ int main()
       nodes[4] = node{0.5, 0.9};
       nodes[5] = node{0.4, 0.1};
       
+     
       while(!WindowShouldClose())
       {
             BeginDrawing();
